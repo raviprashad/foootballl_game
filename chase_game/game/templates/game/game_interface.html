@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Football Chase Game</title>
+    <style>
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            background-color: #e0f7fa; 
+            font-family: Arial, sans-serif;
+        }
+        
+        #game-area { 
+            position: relative; 
+            width: 600px; 
+            height: 400px; 
+            background: url('https://www.transparenttextures.com/patterns/grass.png') green; 
+            border: 3px solid #fff; 
+            border-radius: 10px; 
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2); 
+            overflow: hidden;
+        }
+        
+        .player, .football {
+            position: absolute; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 1.5em; 
+            color: white; 
+            font-weight: bold;
+            transition: all 0.1s ease-in-out;
+        }
+
+        .player { background-color: #1e88e5; box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3); }
+        .football { background-color: #d84315; box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3); }
+        
+        #score-board, #timer {
+            position: absolute;
+            top: -40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 5px;
+            background-color: #2e7d32;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        #score-board { left: 0; }
+        #timer { right: 0; }
+        
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-area">
+        <div id="score-board">Score: 0</div>
+        <div id="timer">Time: 30s</div>
+        <div id="player" class="player" style="left: 10px; top: 10px;">👨</div>
+        <div id="football" class="football" style="left: 200px; top: 200px;">⚽</div>
+        <div id="game-over">Game Over! <br> Final Score: <span id="final-score">0</span></div>
+    </div>
+
+    <audio id="catch-sound" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+
+    <script>
+        const player = document.getElementById('player');
+        const football = document.getElementById('football');
+        const scoreBoard = document.getElementById('score-board');
+        const timerDisplay = document.getElementById('timer');
+        const gameOverMessage = document.getElementById('game-over');
+        const finalScore = document.getElementById('final-score');
+        const catchSound = document.getElementById('catch-sound');
+        let score = 0;
+        let timeLeft = 30;
+        let gameInterval;
+
+        function updateScore() {
+            score++;
+            scoreBoard.textContent = `Score: ${score}`;
+        }
+
+        function resetPositions() {
+            player.style.left = '10px';
+            player.style.top = '10px';
+            football.style.left = `${Math.random() * 560}px`;
+            football.style.top = `${Math.random() * 360}px`;
+        }
+
+        function startTimer() {
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Time: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameOverMessage.style.display = 'block';
+            finalScore.textContent = score;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const step = 10;
+            let playerPos = player.getBoundingClientRect();
+            let footballPos = football.getBoundingClientRect();
+            let gameAreaPos = document.getElementById('game-area').getBoundingClientRect();
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (playerPos.top > gameAreaPos.top) player.style.top = `${player.offsetTop - step}px`;
+                    break;
+                case 'ArrowDown':
+                    if (playerPos.bottom < gameAreaPos.bottom) player.style.top = `${player.offsetTop + step}px`;
+                    break;
+                case 'ArrowLeft':
+                    if (playerPos.left > gameAreaPos.left) player.style.left = `${player.offsetLeft - step}px`;
+                    break;
+                case 'ArrowRight':
+                    if (playerPos.right < gameAreaPos.right) player.style.left = `${player.offsetLeft + step}px`;
+                    break;
+            }
+
+            playerPos = player.getBoundingClientRect();
+            footballPos = football.getBoundingClientRect();
+            if (Math.abs(playerPos.left - footballPos.left) < 10 && Math.abs(playerPos.top - footballPos.top) < 10) {
+                updateScore();
+                catchSound.play();
+                resetPositions();
+            }
+        });
+
+        startTimer();
+    </script>
+</body>
+</html>
